@@ -1,10 +1,11 @@
+use crate::data;
 use plotters::{prelude::*, style::full_palette as palette};
 
 const CAPTION: &str = "Дані про сумарні місячні продажі товарів в магазинах";
 const Y_NAME: &str = "MONTH";
 const X_NAME: &str = "SALES";
 
-pub fn render(data: &[u32], mix_color: bool, dir: Option<&str>, name: &str) {
+pub fn render(data: &[f32], mix_color: bool, dir: Option<&str>, name: &str) {
     let mut path = std::env::current_dir().expect("cwd");
     path.push("forecast_graphs");
     if !path.exists() {
@@ -54,19 +55,16 @@ pub fn render(data: &[u32], mix_color: bool, dir: Option<&str>, name: &str) {
         vec![&RED]
     };
 
-    for (i, chunk) in data.chunks(12).enumerate() {
+    for (i, chunk) in data.chunks(data::SEASON).enumerate() {
         let color_index = i % colors.len();
         let color = colors[color_index].mix(0.5).filled();
 
         chart
-            .draw_series(
-                Histogram::vertical(&chart).style(color).data(
-                    chunk
-                        .iter()
-                        .enumerate()
-                        .map(|(idx, &count)| (i as u32 * 12 + idx as u32, count)),
-                ),
-            )
+            .draw_series(Histogram::vertical(&chart).style(color).data(
+                chunk.iter().enumerate().map(|(idx, &count)| {
+                    (i as u32 * data::SEASON as u32 + idx as u32, count as u32)
+                }),
+            ))
             .unwrap();
     }
 

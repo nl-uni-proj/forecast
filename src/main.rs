@@ -1,6 +1,9 @@
-mod forecast;
+mod data;
+mod exponent;
+mod naive;
 mod render;
 
 fn main() {
-    forecast::analyze();
+    naive::analyze();
+    exponent::analyze();
 }
