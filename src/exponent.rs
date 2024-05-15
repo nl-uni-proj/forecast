@@ -1,6 +1,9 @@
 use crate::data;
 use crate::render;
 
+//@change histogram to graph
+//@ 2nd Md-M model
+//@ update all report graph images
 pub fn analyze() {
     let mut train = [0.0_f32; data::SEASON * 4];
     let mut predicted = [0.0_f32; data::SEASON];
@@ -8,7 +11,6 @@ pub fn analyze() {
 
     const PARAM_A_STEP: f32 = 0.001; // 1000 iter
     const PARAM_B_STEP: f32 = 0.001; // 1000 iter
-
     let mut param_a: f32 = PARAM_A_STEP;
     let mut param_b: f32 = PARAM_B_STEP;
 
@@ -48,11 +50,11 @@ pub fn analyze() {
 
     // best training result
     {
-        println!("\nError analysis for `exponential M-N v2` method");
+        println!("\nError analysis for `exponential M-N` method");
         println!("BEST MAE: {}", best_mae);
         println!("BEST RMSE: {}", min_rmse);
         println!("BEST PARAMS: A `{best_param_a}`, B `{best_param_b}`");
-        println!("TRAIN ITERATIONS: {iterations}");
+        println!("TRAIN ITERATIONS: {iterations}\n");
 
         let mut joined = best_train.to_vec();
         joined.extend(best_predicted);
@@ -92,7 +94,7 @@ fn smooth_real_values(target: &mut [f32], param_a: f32, param_b: f32) -> Forecas
 fn predict_test_next_values(
     test: &[f32],
     predicted: &mut [f32],
-    mut prev: ForecastResult,
+    prev: ForecastResult,
     param_a: f32,
     param_b: f32,
 ) -> ForecastEval {
@@ -100,7 +102,6 @@ fn predict_test_next_values(
     for i in 0..predicted.len() {
         let predict = forecast_m_n(prev.y, prev.l, prev.b, param_a, param_b, h);
         predicted[i] = predict.y;
-        prev = predict;
         h += 1.0;
     }
     return ForecastEval {
@@ -109,19 +110,18 @@ fn predict_test_next_values(
     };
 }
 
-fn predict_next_values(
-    predicted: &mut [f32],
-    mut prev: ForecastResult,
-    param_a: f32,
-    param_b: f32,
-) {
+fn predict_next_values(predicted: &mut [f32], prev: ForecastResult, param_a: f32, param_b: f32) {
     let mut h = 1.0;
     for i in 0..predicted.len() {
         let predict = forecast_m_n(prev.y, prev.l, prev.b, param_a, param_b, h);
         predicted[i] = predict.y;
-        prev = predict;
         h += 1.0;
     }
+}
+
+struct ForecastEval {
+    mae: f32,
+    rmse: f32,
 }
 
 struct ForecastResult {
@@ -130,20 +130,15 @@ struct ForecastResult {
     y: f32,
 }
 
-struct ForecastEval {
-    mae: f32,
-    rmse: f32,
-}
-
 fn forecast_m_n(
-    real_y: f32,
+    y: f32,
     prev_l: f32,
     prev_b: f32,
     param_a: f32,
     param_b: f32,
     h: f32,
 ) -> ForecastResult {
-    let l = param_a * real_y + (1.0 - param_a) * prev_l * prev_b;
+    let l = param_a * y + (1.0 - param_a) * prev_l * prev_b;
     let b = param_b * (l / prev_l) + (1.0 - param_b) * prev_b;
     let y = l * b.powf(h);
     ForecastResult { l, b, y }

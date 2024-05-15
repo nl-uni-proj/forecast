@@ -31,9 +31,9 @@ pub fn mae(predicted: &[f32], test: &[f32]) -> f32 {
     let mut error_sum = 0.0;
     for i in 0..predicted.len() {
         let diff = predicted[i] - test[i];
-        error_sum += diff;
+        error_sum += diff.abs();
     }
-    (error_sum / predicted.len() as f32).abs()
+    error_sum / predicted.len() as f32
 }
 
 // root mean square error
