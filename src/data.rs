@@ -1,6 +1,7 @@
 use std::ops::Range;
 
 pub const SEASON: usize = 12;
+pub const SEASON_F: f32 = 12.0;
 pub const TRAIN_RANGE: Range<usize> = 0..SEASON * 4;
 pub const TEST_RANGE: Range<usize> = SEASON * 4..SEASON * 5;
 
